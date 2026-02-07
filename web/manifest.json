@@ -1,6 +1,6 @@
 {
-    "name": "running_club_tunis",
-    "short_name": "running_club_tunis",
+    "name": "rct_connect",
+    "short_name": "rct_connect",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

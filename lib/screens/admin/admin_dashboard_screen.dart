@@ -5,7 +5,7 @@ import '../../models/user_model.dart';
 import '../../utils/constants.dart';
 import '../events/create_event_screen.dart';
 import '../events/event_list_screen.dart';
-// import 'manage_users_screen.dart'; // Future implementation
+import 'manage_users_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -31,28 +31,31 @@ class AdminDashboardScreen extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         children: [
-          _DashboardCard(
-            icon: Icons.add_moderator,
-            label: 'Gérer les Utilisateurs',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content:
-                      Text('Fonctionnalité à venir: Gestion des membres')));
-            },
-            color: Colors.blue,
-          ),
-          _DashboardCard(
-            icon: Icons.event,
-            label: 'Liste Événements',
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const EventListScreen()));
-            },
-            color: Colors.orange,
-          ),
-          if (user.role == UserRole.superAdmin ||
-              user.role == UserRole.coach ||
-              user.role == UserRole.groupAdmin)
+          // Only ADMIN_PRINCIPAL can manage users/roles
+          if (user.role == UserRole.superAdmin)
+            _DashboardCard(
+              icon: Icons.add_moderator,
+              label: 'Gérer les Utilisateurs',
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ManageUsersScreen()));
+              },
+              color: Colors.blue,
+            ),
+
+          // Only ADMIN_GROUPE can manage events
+          if (user.role == UserRole.groupAdmin) ...[
+            _DashboardCard(
+              icon: Icons.event,
+              label: 'Liste Événements',
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const EventListScreen()));
+              },
+              color: Colors.orange,
+            ),
             _DashboardCard(
               icon: Icons.add_circle,
               label: 'Créer Événement',
@@ -64,6 +67,7 @@ class AdminDashboardScreen extends StatelessWidget {
               },
               color: Colors.green,
             ),
+          ],
         ],
       ),
     );

@@ -34,9 +34,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         participants: [],
       );
 
+      final nav = Navigator.of(context);
       await Provider.of<EventService>(context, listen: false)
           .createEvent(newEvent);
-      if (context.mounted) Navigator.pop(context);
+      if (nav.canPop()) {
+        nav.pop();
+      }
     }
   }
 
@@ -90,7 +93,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     lastDate: DateTime(2030));
                 if (date != null) {
                   // ignore: use_build_context_synchronously
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   final time = await showTimePicker(
                       context: context,
                       initialTime: TimeOfDay.fromDateTime(_selectedDate));

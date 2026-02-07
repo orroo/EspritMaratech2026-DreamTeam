@@ -1,4 +1,4 @@
-# running_club_tunis
+# rct_connect
 
 A new Flutter project.
 

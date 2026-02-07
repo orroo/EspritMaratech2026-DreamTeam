@@ -5,12 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'services/event_service.dart';
+import 'services/user_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'utils/constants.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => EventService()),
+        ChangeNotifierProvider(create: (_) => UserService()),
       ],
       child: MaterialApp(
         title: 'Running Club Tunis',

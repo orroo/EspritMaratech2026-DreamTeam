@@ -5,6 +5,7 @@ import '../../models/event_model.dart';
 import '../../services/event_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
+import 'event_details_screen.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
@@ -29,12 +30,16 @@ class _EventListScreenState extends State<EventListScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<List<EventModel>>(
-        future: Provider.of<EventService>(context, listen: false)
-            .getEvents(group: group),
+      body: StreamBuilder<List<EventModel>>(
+        stream: Provider.of<EventService>(context, listen: false)
+            .getEventsStream(group: group),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Erreur: ${snapshot.error}'));
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -76,7 +81,12 @@ class _EventListScreenState extends State<EventListScreen> {
                   ),
                   isThreeLine: true,
                   onTap: () {
-                    // TODO: Show details
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EventDetailsScreen(event: event),
+                      ),
+                    );
                   },
                 ),
               );

@@ -22,14 +22,12 @@ class HomeScreen extends StatelessWidget {
       return const ClubHistoryScreen(isVisitor: true);
     }
 
-    // For Admins (All levels)
-    if (user.role == UserRole.superAdmin ||
-        user.role == UserRole.coach ||
-        user.role == UserRole.groupAdmin) {
+    // For Principal Admin (User Management) and Group Admin (Event Management)
+    if (user.role == UserRole.superAdmin || user.role == UserRole.groupAdmin) {
       return const AdminDashboardScreen();
     }
 
-    // For Members
-    return const EventListScreen(); // Members land on Event List
+    // For Members and Coaches
+    return const EventListScreen(); // land on Event List
   }
 }
