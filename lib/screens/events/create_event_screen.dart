@@ -3,6 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
+import '../../services/notification_service.dart';
+import '../../services/auth_service.dart';
+import '../../models/user_model.dart';
+import '../../models/group_model.dart';
+import '../../services/group_service.dart';
 import '../../utils/constants.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -35,8 +40,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       );
 
       final nav = Navigator.of(context);
-      await Provider.of<EventService>(context, listen: false)
-          .createEvent(newEvent);
+      final eventService = Provider.of<EventService>(context, listen: false);
+      final notificationService =
+          Provider.of<NotificationService>(context, listen: false);
+
+      await eventService.createEvent(newEvent, notificationService);
+
       if (nav.canPop()) {
         nav.pop();
       }
@@ -45,6 +54,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final currentUser = authService.currentUser;
+
+    // Pre-fill group if group admin
+    if (currentUser?.role == UserRole.groupAdmin && _targetGroup == 'All') {
+      if (currentUser?.group != null) {
+        _targetGroup = currentUser!.group!;
+      }
+    }
+
+    // Determine if user can change group (only adminPrincipal or adminCoach)
+    final canChangeGroup = currentUser?.role == UserRole.adminPrincipal ||
+        currentUser?.role == UserRole.adminCoach;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Créer un événement')),
       body: Form(
@@ -68,18 +91,34 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               validator: (v) => v!.isEmpty ? 'Requis' : null,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _targetGroup,
-              decoration: const InputDecoration(labelText: 'Groupe Cible'),
-              items: ['All', 'A', 'B']
-                  .map((g) => DropdownMenuItem(
-                        value: g,
-                        child:
-                            Text(g == 'All' ? 'Tous les groupes' : 'Groupe $g'),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => _targetGroup = v!),
-            ),
+            if (canChangeGroup)
+              StreamBuilder<List<GroupModel>>(
+                stream: Provider.of<GroupService>(context).getAllGroups(),
+                builder: (context, snapshot) {
+                  final groups = snapshot.data ?? [];
+                  return DropdownButtonFormField<String>(
+                    initialValue: _targetGroup,
+                    decoration:
+                        const InputDecoration(labelText: 'Groupe Cible'),
+                    items: [
+                      const DropdownMenuItem(
+                          value: 'All', child: Text('Tous les groupes')),
+                      ...groups.map((g) => DropdownMenuItem(
+                            value: g
+                                .name, // Or g.id depending on how events filter
+                            child: Text('Groupe ${g.name}'),
+                          )),
+                    ],
+                    onChanged: (v) => setState(() => _targetGroup = v!),
+                  );
+                },
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text('Groupe cible: $_targetGroup',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
             const SizedBox(height: 16),
             ListTile(
               title: const Text('Date et Heure'),
@@ -108,7 +147,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<EventType>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(labelText: 'Type d\'événement'),
               items: EventType.values
                   .map((t) => DropdownMenuItem(

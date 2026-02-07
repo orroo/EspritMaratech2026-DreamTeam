@@ -24,6 +24,7 @@ dependencies:
   shared_preferences: ^2.2.2
   google_fonts: ^6.1.0
   flutter_dotenv: ^6.0.0
+  flutter_local_notifications: ^20.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,31 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../notifications/notifications_screen.dart';
+import '../../services/notification_service.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
+import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
 import 'event_details_screen.dart';
 
-class EventListScreen extends StatefulWidget {
+class EventListScreen extends StatelessWidget {
   const EventListScreen({super.key});
 
   @override
-  State<EventListScreen> createState() => _EventListScreenState();
-}
-
-class _EventListScreenState extends State<EventListScreen> {
-  @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    final group = authService.currentUser?.group;
+    final notificationService = Provider.of<NotificationService>(context);
+    final user = authService.currentUser;
+
+    if (user == null) {
+      return const Scaffold(body: Center(child: Text('Erreur')));
+    }
+
+    final isAdmin = user.role == UserRole.adminPrincipal ||
+        user.role == UserRole.adminCoach ||
+        user.role == UserRole.groupAdmin;
+    final group = isAdmin ? null : user.group;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Événements'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         actions: [
+          StreamBuilder<int>(
+            stream: notificationService.getUnreadCount(
+                user.group ?? 'All', user.lastReadTimestamp),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const NotificationsScreen()),
+                      );
+                    },
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
-            icon: const Icon(Icons.exit_to_app),
+            icon: const Icon(Icons.logout),
             onPressed: () => authService.logout(),
           ),
         ],

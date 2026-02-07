@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 enum UserRole {
-  superAdmin, // Comité directrice
-  coach, // Admin Coach
+  adminPrincipal, // Comité directrice
+  adminCoach, // Admin Coach
   groupAdmin, // Responsable de groupe
   member, // Adhérent
   visitor // Visiteurn
@@ -12,6 +14,7 @@ class UserModel {
   final String cin; // Full CIN
   final UserRole role;
   final String? group; // Changed from groupName
+  final DateTime? lastReadTimestamp;
 
   UserModel({
     required this.id,
@@ -19,6 +22,7 @@ class UserModel {
     required this.cin,
     required this.role,
     this.group,
+    this.lastReadTimestamp,
   });
 
   // Factory to create from Firestore document
@@ -29,6 +33,9 @@ class UserModel {
       cin: data['cin'] ?? '',
       role: _stringToRole(data['role']),
       group: data['group'],
+      lastReadTimestamp: data['lastReadTimestamp'] != null
+          ? (data['lastReadTimestamp'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -38,15 +45,18 @@ class UserModel {
       'cin': cin,
       'role': _roleToString(role),
       'group': group,
+      'lastReadTimestamp': lastReadTimestamp != null
+          ? Timestamp.fromDate(lastReadTimestamp!)
+          : null,
     };
   }
 
   static UserRole _stringToRole(String? roleStr) {
     switch (roleStr) {
       case 'ADMIN_PRINCIPAL':
-        return UserRole.superAdmin;
+        return UserRole.adminPrincipal;
       case 'ADMIN_COACH':
-        return UserRole.coach;
+        return UserRole.adminCoach;
       case 'ADMIN_GROUPE':
         return UserRole.groupAdmin;
       case 'ADHERENT':
@@ -58,9 +68,9 @@ class UserModel {
 
   static String _roleToString(UserRole role) {
     switch (role) {
-      case UserRole.superAdmin:
+      case UserRole.adminPrincipal:
         return 'ADMIN_PRINCIPAL';
-      case UserRole.coach:
+      case UserRole.adminCoach:
         return 'ADMIN_COACH';
       case UserRole.groupAdmin:
         return 'ADMIN_GROUPE';
@@ -77,9 +87,9 @@ class UserModel {
   // Get display name for role (French labels)
   static String getRoleDisplayName(UserRole role) {
     switch (role) {
-      case UserRole.superAdmin:
+      case UserRole.adminPrincipal:
         return 'Comité Directrice';
-      case UserRole.coach:
+      case UserRole.adminCoach:
         return 'Admin Coach';
       case UserRole.groupAdmin:
         return 'Responsable de Groupe';
@@ -93,9 +103,9 @@ class UserModel {
   // Get role description
   static String getRoleDescription(UserRole role) {
     switch (role) {
-      case UserRole.superAdmin:
+      case UserRole.adminPrincipal:
         return 'Accès complet à toutes les fonctionnalités';
-      case UserRole.coach:
+      case UserRole.adminCoach:
         return 'Peut gérer les événements et les membres';
       case UserRole.groupAdmin:
         return 'Peut gérer son groupe';
@@ -109,9 +119,9 @@ class UserModel {
   // Get color for role
   static int getRoleColor(UserRole role) {
     switch (role) {
-      case UserRole.superAdmin:
+      case UserRole.adminPrincipal:
         return 0xFFD32F2F; // Red
-      case UserRole.coach:
+      case UserRole.adminCoach:
         return 0xFFF57C00; // Orange
       case UserRole.groupAdmin:
         return 0xFF1976D2; // Blue
@@ -125,8 +135,8 @@ class UserModel {
   // Get all available roles for selection
   static List<UserRole> getAllRoles() {
     return [
-      UserRole.superAdmin,
-      UserRole.coach,
+      UserRole.adminPrincipal,
+      UserRole.adminCoach,
       UserRole.groupAdmin,
       UserRole.member,
       UserRole.visitor,

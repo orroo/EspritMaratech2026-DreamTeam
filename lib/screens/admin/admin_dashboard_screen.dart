@@ -6,6 +6,10 @@ import '../../utils/constants.dart';
 import '../events/create_event_screen.dart';
 import '../events/event_list_screen.dart';
 import 'manage_users_screen.dart';
+import '../notifications/notifications_screen.dart';
+import '../../services/notification_service.dart';
+import 'manage_group_screen.dart';
+import '../info/programs_list_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -13,16 +17,69 @@ class AdminDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    final user = authService.currentUser!;
+    final user = authService.currentUser;
+    final notificationService = Provider.of<NotificationService>(context);
+
+    if (user == null) {
+      return const Scaffold(body: Center(child: Text('Erreur')));
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin: ${user.name}'),
+        title: const Text('Tableau de Bord Admin'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
+          StreamBuilder<int>(
+            stream: notificationService.getUnreadCount(
+                user.group ?? 'All', user.lastReadTimestamp),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const NotificationsScreen()),
+                      );
+                    },
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
-              onPressed: authService.logout, icon: const Icon(Icons.logout))
+            icon: const Icon(Icons.logout),
+            onPressed: () => authService.logout(),
+          ),
         ],
       ),
       body: GridView.count(
@@ -31,8 +88,7 @@ class AdminDashboardScreen extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         children: [
-          // Only ADMIN_PRINCIPAL can manage users/roles
-          if (user.role == UserRole.superAdmin)
+          if (user.role == UserRole.adminPrincipal)
             _DashboardCard(
               icon: Icons.add_moderator,
               label: 'Gérer les Utilisateurs',
@@ -44,9 +100,24 @@ class AdminDashboardScreen extends StatelessWidget {
               },
               color: Colors.blue,
             ),
-
-          // Only ADMIN_GROUPE can manage events
-          if (user.role == UserRole.groupAdmin) ...[
+          if (user.role == UserRole.groupAdmin ||
+              user.role == UserRole.adminPrincipal)
+            _DashboardCard(
+              icon: Icons.group_work,
+              label: user.role == UserRole.adminPrincipal
+                  ? 'Gérer les Groupes'
+                  : 'Gérer mon Groupe',
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ManageGroupScreen()));
+              },
+              color: Colors.deepPurple,
+            ),
+          if (user.role == UserRole.groupAdmin ||
+              user.role == UserRole.adminPrincipal ||
+              user.role == UserRole.adminCoach) ...[
             _DashboardCard(
               icon: Icons.event,
               label: 'Liste Événements',
@@ -68,6 +139,43 @@ class AdminDashboardScreen extends StatelessWidget {
               color: Colors.green,
             ),
           ],
+          if (user.role == UserRole.adminCoach ||
+              user.role == UserRole.adminPrincipal) ...[
+            _DashboardCard(
+              icon: Icons.assignment,
+              label: 'Liste Programmes',
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ProgramsListScreen()));
+              },
+              color: Colors.teal,
+            ),
+            _DashboardCard(
+              icon: Icons.add_task,
+              label: 'Nouveau Programme',
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const ProgramsListScreen(showAddDialog: true)));
+              },
+              color: Colors.blue,
+            ),
+          ] else
+            _DashboardCard(
+              icon: Icons.assignment,
+              label: 'Programmes',
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ProgramsListScreen()));
+              },
+              color: Colors.teal,
+            ),
         ],
       ),
     );

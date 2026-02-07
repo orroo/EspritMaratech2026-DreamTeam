@@ -103,9 +103,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
 
     if (confirmed == true) {
+      if (!mounted) return;
       final nav = Navigator.of(context);
-      await Provider.of<EventService>(context, listen: false)
-          .deleteEvent(widget.event.id);
+      final eventService = Provider.of<EventService>(context, listen: false);
+      await eventService.deleteEvent(widget.event.id);
 
       if (nav.canPop()) {
         nav.pop();
@@ -297,7 +298,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _targetGroup,
+            initialValue: _targetGroup,
             decoration: const InputDecoration(labelText: 'Groupe Cible'),
             items: ['All', 'A', 'B']
                 .map((g) => DropdownMenuItem(
@@ -335,7 +336,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<EventType>(
-            value: _selectedType,
+            initialValue: _selectedType,
             decoration: const InputDecoration(labelText: 'Type d\'événement'),
             items: EventType.values
                 .map((t) => DropdownMenuItem(

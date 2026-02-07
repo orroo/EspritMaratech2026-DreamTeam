@@ -30,13 +30,25 @@ class UserService with ChangeNotifier {
     }
   }
 
+  Future<bool> deleteUser(String userId) async {
+    try {
+      await _firestore.collection('user').doc(userId).delete();
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error deleting user: $e");
+      }
+      return false;
+    }
+  }
+
   // Get user count by role (optional utility)
   Future<Map<UserRole, int>> getUserCountByRole() async {
     try {
       final snapshot = await _firestore.collection('user').get();
       final Map<UserRole, int> counts = {
-        UserRole.superAdmin: 0,
-        UserRole.coach: 0,
+        UserRole.adminPrincipal: 0,
+        UserRole.adminCoach: 0,
         UserRole.groupAdmin: 0,
         UserRole.member: 0,
         UserRole.visitor: 0,

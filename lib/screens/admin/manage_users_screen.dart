@@ -107,7 +107,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
-                    final canEdit = currentUser?.role == UserRole.superAdmin;
+                    final canEdit =
+                        currentUser?.role == UserRole.adminPrincipal;
                     return _UserCard(
                       user: user,
                       canEdit: canEdit,
@@ -116,11 +117,54 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                               _showRoleChangeDialog(context, user, userService);
                             }
                           : null,
+                      onDelete: canEdit
+                          ? () {
+                              _confirmDeleteUser(context, user, userService);
+                            }
+                          : null,
                     );
                   },
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteUser(
+      BuildContext context, UserModel user, UserService userService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer l\'utilisateur'),
+        content: Text(
+            'Êtes-vous sûr de vouloir supprimer ${user.name} ? Cette action est irréversible.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final nav = Navigator.of(context);
+              final success = await userService.deleteUser(user.id);
+              nav.pop();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success
+                        ? 'Utilisateur supprimé'
+                        : 'Erreur lors de la suppression'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child:
+                const Text('Supprimer', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -290,11 +334,13 @@ class _RoleChangeConfirmationDialogState
 class _UserCard extends StatelessWidget {
   final UserModel user;
   final VoidCallback? onRoleChanged;
+  final VoidCallback? onDelete;
   final bool canEdit;
 
   const _UserCard({
     required this.user,
     this.onRoleChanged,
+    this.onDelete,
     required this.canEdit,
   });
 
@@ -352,7 +398,7 @@ class _UserCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: Color(UserModel.getRoleColor(user.role))
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: Color(UserModel.getRoleColor(user.role)),
@@ -381,11 +427,22 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Edit icon
+              // Actions
               if (canEdit)
-                Icon(
-                  Icons.edit,
-                  color: Colors.grey[400],
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onDelete != null)
+                      IconButton(
+                        icon:
+                            const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: onDelete,
+                      ),
+                    const Icon(
+                      Icons.edit,
+                      color: Colors.grey,
+                    ),
+                  ],
                 ),
             ],
           ),

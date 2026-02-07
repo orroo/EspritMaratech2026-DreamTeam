@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
-import 'register_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _cinController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -24,21 +23,26 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _errorMessage = '');
 
       final success = await Provider.of<AuthService>(context, listen: false)
-          .login(_nameController.text.trim(), _cinController.text.trim());
+          .register(_nameController.text.trim(), _cinController.text.trim());
 
-      if (!success) {
-        setState(() => _errorMessage = 'Identifiants incorrects');
+      if (success) {
+        if (mounted) {
+          Navigator.pop(
+              context); // Go back to login or it might auto-switch if using auth stream
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Compte créé avec succès!')),
+          );
+        }
+      } else {
+        setState(() =>
+            _errorMessage = 'Nom déjà utilisé ou erreur lors de la création');
       }
     }
-  }
-
-  void _handleVisitorAccess() {
-    Provider.of<AuthService>(context, listen: false).login('visitor', '');
   }
 
   @override
@@ -47,6 +51,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Inscription'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: AppColors.textPrimary,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -57,33 +67,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo or Title
-                  const Icon(Icons.directions_run,
+                  const Icon(Icons.person_add,
                       size: 80, color: AppColors.primary),
                   const SizedBox(height: 16),
                   Text(
-                    'Running Club Tunis',
+                    'Rejoignez-nous',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
                         ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Bienvenue',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                  ),
                   const SizedBox(height: 48),
-
-                  // Inputs
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      labelText: 'Nom',
+                      labelText: 'Nom Complet',
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -96,21 +95,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _cinController,
                     keyboardType: TextInputType.number,
-                    obscureText: true,
-                    maxLength: 3,
+                    maxLength: 8,
                     decoration: InputDecoration(
-                      labelText: '3 derniers chiffres CIN',
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      labelText: 'CIN (8 chiffres)',
+                      prefixIcon: const Icon(Icons.badge_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       counterText: "",
                     ),
-                    validator: (value) => (value!.isEmpty || value.length != 3)
-                        ? '3 chiffres requis'
+                    validator: (value) => (value!.isEmpty || value.length != 8)
+                        ? '8 chiffres requis'
                         : null,
                   ),
-
                   if (_errorMessage.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -119,12 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: Colors.red),
                     ),
                   ],
-
                   const SizedBox(height: 32),
-
-                  // Login Button
                   ElevatedButton(
-                    onPressed: isLoading ? null : _handleLogin,
+                    onPressed: isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -135,37 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Se connecter',
+                        : const Text('S\'inscrire',
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Visitor Button
-                  TextButton(
-                    onPressed: isLoading ? null : _handleVisitorAccess,
-                    child: const Text('Continuer en tant que visiteur'),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Pas encore de compte ?'),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const RegisterScreen()),
-                          );
-                        },
-                        child: const Text('S\'inscrire',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ],
                   ),
                 ],
               ),

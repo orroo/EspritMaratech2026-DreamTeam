@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_model.dart';
+import './notification_service.dart';
 
 class EventService with ChangeNotifier {
   Future<List<EventModel>> getEvents({String? group}) async {
@@ -54,9 +55,43 @@ class EventService with ChangeNotifier {
     });
   }
 
-  Future<void> createEvent(EventModel event) async {
+  Future<void> createEvent(
+      EventModel event, NotificationService notificationService) async {
     try {
-      await FirebaseFirestore.instance.collection('event').add(event.toMap());
+      // 1. Overwrite logic: If this is a group-specific event, archive previous ones
+      if (event.group != 'All') {
+        final existingQuery = await FirebaseFirestore.instance
+            .collection('event')
+            .where('group', isEqualTo: event.group)
+            .get();
+
+        for (var doc in existingQuery.docs) {
+          final oldData = doc.data();
+          // Save to event_history
+          await FirebaseFirestore.instance.collection('event_history').add({
+            ...oldData,
+            'archivedAt': FieldValue.serverTimestamp(),
+            'originalId': doc.id,
+          });
+          // Delete from active events
+          await doc.reference.delete();
+        }
+      }
+
+      // 2. Create the new event
+      final docRef = await FirebaseFirestore.instance
+          .collection('event')
+          .add(event.toMap());
+
+      // Send shared announcement to group (1 write only)
+      await notificationService.sendAnnouncement(
+        group: event.group,
+        title: 'Nouvel événement: ${event.title}',
+        message:
+            'Un nouvel événement a été créé pour le groupe ${event.group}.',
+        eventId: docRef.id,
+      );
+
       notifyListeners();
     } catch (e) {
       if (kDebugMode) {
