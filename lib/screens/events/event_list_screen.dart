@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
 import '../../services/auth_service.dart';
-import '../../utils/constants.dart';
+import '../../widgets/base_screen.dart';
+import '../../providers/theme_provider.dart'; // Add this import
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
@@ -18,17 +19,19 @@ class _EventListScreenState extends State<EventListScreen> {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final group = authService.currentUser?.group;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final colors = themeProvider.colors; // Get colors from ThemeProvider
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Événements'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.exit_to_app),
-            onPressed: () => authService.logout(),
-          ),
-        ],
-      ),
+    return BaseScreen(
+      title: 'Événements',
+      showThemeToggle: true,
+      showBackButton: false,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.exit_to_app),
+          onPressed: () => authService.logout(),
+        ),
+      ],
       body: FutureBuilder<List<EventModel>>(
         future: Provider.of<EventService>(context, listen: false)
             .getEvents(group: group),
@@ -55,7 +58,7 @@ class _EventListScreenState extends State<EventListScreen> {
                   leading: CircleAvatar(
                     backgroundColor: event.kind == EventType.weeklyLongRun
                         ? Colors.purple
-                        : AppColors.primary,
+                        : colors.terracotta, // Use theme color
                     child: Icon(
                         event.kind == EventType.weeklyLongRun
                             ? Icons.star

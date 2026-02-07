@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
-import '../../utils/constants.dart';
+import '../../widgets/base_screen.dart';
+import '../../providers/theme_provider.dart'; // Add this import
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -42,8 +43,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Créer un événement')),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final colors = themeProvider.colors;
+
+    return BaseScreen(
+      title: 'Créer un événement',
+      showThemeToggle: true,
+      showBackButton: true,
       body: Form(
         key: _formKey,
         child: ListView(
@@ -66,7 +72,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _targetGroup,
+              initialValue: _targetGroup,
               decoration: const InputDecoration(labelText: 'Groupe Cible'),
               items: ['All', 'A', 'B']
                   .map((g) => DropdownMenuItem(
@@ -105,7 +111,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<EventType>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(labelText: 'Type d\'événement'),
               items: EventType.values
                   .map((t) => DropdownMenuItem(
@@ -119,8 +125,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ElevatedButton(
               onPressed: _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: colors.terracotta, // Use theme color
+                foregroundColor: colors.ivory, // Use theme color
               ),
               child: const Text('Créer'),
             ),

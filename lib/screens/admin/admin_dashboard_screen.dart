@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../models/user_model.dart';
-import '../../utils/constants.dart';
+import '../../widgets/base_screen.dart'; // Add this import
 import '../events/create_event_screen.dart';
 import '../events/event_list_screen.dart';
-// import 'manage_users_screen.dart'; // Future implementation
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -15,16 +14,16 @@ class AdminDashboardScreen extends StatelessWidget {
     final authService = Provider.of<AuthService>(context);
     final user = authService.currentUser!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Admin: ${user.name}'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-              onPressed: authService.logout, icon: const Icon(Icons.logout))
-        ],
-      ),
+    return BaseScreen(
+      title: 'Admin: ${user.name}',
+      showThemeToggle: true,
+      showBackButton: false,
+      actions: [
+        IconButton(
+          onPressed: authService.logout,
+          icon: const Icon(Icons.logout),
+        ),
+      ],
       body: GridView.count(
         crossAxisCount: 2,
         padding: const EdgeInsets.all(16),

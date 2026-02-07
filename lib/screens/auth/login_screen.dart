@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
-import '../../utils/constants.dart';
+import '../../providers/theme_provider.dart';
+import '../../widgets/base_screen.dart'; // Add this import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,9 +44,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = Provider.of<AuthService>(context).isLoading;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final colors = themeProvider.colors;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return BaseScreen(
+      title: '',
+      showThemeToggle: true,
+      showBackButton: false,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -57,14 +62,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo or Title
-                  Icon(Icons.directions_run, size: 80, color: AppColors.primary),
+                  Icon(Icons.directions_run, size: 80, color: colors.terracotta),
                   const SizedBox(height: 16),
                   Text(
                     'Running Club Tunis',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: colors.coffee,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -72,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Bienvenue',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colors.stone,
                     ),
                   ),
                   const SizedBox(height: 48),
@@ -82,9 +87,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: 'Nom',
-                      prefixIcon: const Icon(Icons.person_outline),
+                      labelStyle: TextStyle(color: colors.coffee),
+                      prefixIcon: Icon(Icons.person_outline, color: colors.terracotta),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colors.stone),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colors.terracotta, width: 2),
                       ),
                     ),
                     validator: (value) => value!.isEmpty ? 'Veuillez entrer votre nom' : null,
@@ -97,9 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     maxLength: 3,
                     decoration: InputDecoration(
                       labelText: '3 derniers chiffres CIN',
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      labelStyle: TextStyle(color: colors.coffee),
+                      prefixIcon: Icon(Icons.lock_outline, color: colors.terracotta),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colors.stone),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colors.terracotta, width: 2),
                       ),
                       counterText: "",
                     ),
@@ -114,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       _errorMessage,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(color: Colors.red.shade700),
                     ),
                   ],
 
@@ -124,15 +141,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: colors.terracotta,
+                      foregroundColor: colors.ivory,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: isLoading 
-                        ? const CircularProgressIndicator(color: Colors.white) 
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
                         : const Text('Se connecter', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
 
@@ -141,6 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Visitor Button
                   TextButton(
                     onPressed: isLoading ? null : _handleVisitorAccess,
+                    style: TextButton.styleFrom(
+                      foregroundColor: colors.terracotta,
+                    ),
                     child: const Text('Continuer en tant que visiteur'),
                   ),
                 ],
