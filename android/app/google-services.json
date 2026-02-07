@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "164074208933",
+    "project_id": "rct-connect",
+    "storage_bucket": "rct-connect.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164074208933:android:dea395827f930a8898174c",
+        "android_client_info": {
+          "package_name": "com.example.running_club_tunis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "164074208933-u7hnmutfnr9ltllins5hcituuu8h9vl7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNAgAE_ULnrFPWdmG37PLX8OAFee7O3DY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "164074208933-u7hnmutfnr9ltllins5hcituuu8h9vl7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
