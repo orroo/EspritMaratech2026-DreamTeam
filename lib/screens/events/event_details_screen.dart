@@ -6,6 +6,7 @@ import '../../models/user_model.dart';
 import '../../services/event_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
+import '../../widgets/assistant_fab.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final EventModel event;
@@ -133,20 +134,26 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         foregroundColor: Colors.white,
         actions: [
           if (canManage && !_isEditing)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                setState(() {
-                  _isEditing = true;
-                  // Re-initialize controllers with the current event data when entering edit mode
-                  _initializeControllers(widget.event);
-                });
-              },
+            Semantics(
+              label: 'Modifier l\'événement',
+              child: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = true;
+                    // Re-initialize controllers with the current event data when entering edit mode
+                    _initializeControllers(widget.event);
+                  });
+                },
+              ),
             ),
           if (canManage && !_isEditing)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: _deleteEvent,
+            Semantics(
+              label: 'Supprimer l\'événement',
+              child: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: _deleteEvent,
+              ),
             ),
         ],
       ),
@@ -171,6 +178,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           return _isEditing ? _buildEditForm(event) : _buildDetailsView(event);
         },
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 
@@ -225,7 +233,56 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             title: 'Participants',
             content: '${event.participants.length} participant(s)',
           ),
+          const SizedBox(height: 24),
+          _buildJoinLeaveButton(context, event),
+          const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  Widget _buildJoinLeaveButton(BuildContext context, EventModel event) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
+
+    if (user == null) return const SizedBox.shrink();
+
+    final isJoined = event.participants.contains(user.id);
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isJoined ? Colors.red : Colors.green,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () async {
+          final eventService =
+              Provider.of<EventService>(context, listen: false);
+          if (isJoined) {
+            await eventService.leaveEvent(event.id, user.id);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Vous avez quitté l\'événement')),
+              );
+            }
+          } else {
+            await eventService.joinEvent(event.id, user.id);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Vous avez rejoint l\'événement')),
+              );
+            }
+          }
+        },
+        child: Text(
+          isJoined ? 'Quitter l\'événement' : 'Rejoindre l\'événement',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

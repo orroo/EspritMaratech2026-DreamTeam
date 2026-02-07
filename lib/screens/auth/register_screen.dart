@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/assistant_fab.dart';
 import '../../utils/constants.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -139,6 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 }

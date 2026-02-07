@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../models/program_model.dart';
+import '../../widgets/assistant_fab.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/program_service.dart';
@@ -170,13 +171,22 @@ class _ProgramsListScreenState extends State<ProgramsListScreen> {
           ),
         ],
       ),
-      floatingActionButton: isCoach
-          ? FloatingActionButton(
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (isCoach) ...[
+            FloatingActionButton(
+              heroTag: 'add_program',
               onPressed: () => _showProgramDialog(context),
               backgroundColor: AppColors.primary,
               child: const Icon(Icons.add, color: Colors.white),
-            )
-          : null,
+            ),
+            const SizedBox(height: 16),
+          ],
+          const AssistantFAB(),
+        ],
+      ),
     );
   }
 

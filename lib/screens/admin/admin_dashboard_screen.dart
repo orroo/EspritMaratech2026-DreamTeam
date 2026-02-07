@@ -10,6 +10,7 @@ import '../notifications/notifications_screen.dart';
 import '../../services/notification_service.dart';
 import 'manage_group_screen.dart';
 import '../info/programs_list_screen.dart';
+import '../../widgets/assistant_fab.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -178,6 +179,7 @@ class AdminDashboardScreen extends StatelessWidget {
             ),
         ],
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 }

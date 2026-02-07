@@ -6,6 +6,7 @@ import '../../services/notification_service.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
 import '../../models/user_model.dart';
+import '../../widgets/assistant_fab.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
 import 'event_details_screen.dart';
@@ -150,6 +151,7 @@ class EventListScreen extends StatelessWidget {
           );
         },
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 }

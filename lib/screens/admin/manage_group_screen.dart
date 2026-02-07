@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/group_model.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/assistant_fab.dart';
 import '../../services/group_service.dart';
 import '../../utils/constants.dart';
 
@@ -64,6 +65,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 return _buildManageGroupView(groupService, group);
               },
             ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 
@@ -98,12 +100,11 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 final nav = Navigator.of(context);
                 await service.createGroup(_groupNameController.text, 'system');
                 _groupNameController.clear();
+                if (!nav.mounted) return;
                 nav.pop();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Groupe créé avec succès')),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Groupe créé avec succès')),
+                );
               }
             },
             child: const Text('Créer'),
@@ -216,7 +217,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                       _groupNameController.text, adminId);
                   await authService.refreshUser();
 
-                  if (mounted) {
+                  if (context.mounted) {
                     setState(() {}); // Refresh to show manage view
                   }
                 }
@@ -328,10 +329,9 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                   backgroundColor: Colors.greenAccent)
               : ElevatedButton(
                   onPressed: () async {
-                    final scaffoldContext = context;
                     await service.addUserToGroup(user.id, groupId);
-                    if (!scaffoldContext.mounted) return;
-                    ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('${user.name} ajouté au groupe')),
                     );
                     _searchController.clear();

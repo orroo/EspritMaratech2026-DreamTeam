@@ -146,6 +146,35 @@ class NotificationService with ChangeNotifier {
     });
   }
 
+  // Fetch recent announcements (Future, not Stream)
+  Future<List<NotificationModel>> fetchRecentAnnouncements(
+      String group, DateTime? lastRead) async {
+    Query query = _firestore.collection('announcement');
+
+    if (group != 'All') {
+      query = query.where('group', whereIn: [group, 'All']);
+    }
+
+    final snapshot =
+        await query.orderBy('timestamp', descending: true).limit(5).get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      final timestamp = (data['timestamp'] as Timestamp).toDate();
+      bool isRead = lastRead != null && timestamp.isBefore(lastRead);
+
+      return NotificationModel(
+        id: doc.id,
+        userId: '',
+        title: data['title'] ?? '',
+        message: data['message'] ?? '',
+        timestamp: timestamp,
+        isRead: isRead,
+        eventId: data['eventId'],
+      );
+    }).toList();
+  }
+
   // Get unread count via shared announcements
   Stream<int> getUnreadCount(String group, DateTime? lastRead) {
     Query query = _firestore.collection('announcement');

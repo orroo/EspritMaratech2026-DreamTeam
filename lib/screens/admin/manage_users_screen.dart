@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../services/user_service.dart';
+import '../../widgets/assistant_fab.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
 
@@ -14,6 +15,13 @@ class ManageUsersScreen extends StatefulWidget {
 
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +37,27 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Rechercher par nom...',
+                hintText: 'Rechercher par nom ou CIN...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                filled: true,
-                fillColor: Colors.grey[100],
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
               ),
               onChanged: (value) {
                 setState(() {
@@ -49,13 +66,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               },
             ),
           ),
-          // User list
           Expanded(
             child: StreamBuilder<List<UserModel>>(
               stream: userService.getAllUsers(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
 
                 if (snapshot.hasError) {
@@ -64,18 +82,12 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.error_outline,
-                            size: 64, color: Colors.red),
+                            color: Colors.red, size: 48),
                         const SizedBox(height: 16),
-                        Text(
-                          'Erreur: ${snapshot.error}',
-                          style: const TextStyle(color: Colors.red),
-                          textAlign: TextAlign.center,
-                        ),
+                        Text('Erreur: ${snapshot.error}'),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () {
-                            setState(() {}); // Trigger rebuild
-                          },
+                          onPressed: () => setState(() {}),
                           child: const Text('Réessayer'),
                         ),
                       ],
@@ -130,6 +142,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
         ],
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 
@@ -150,17 +163,16 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             onPressed: () async {
               final nav = Navigator.of(context);
               final success = await userService.deleteUser(user.id);
+              if (!nav.mounted) return;
               nav.pop();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success
-                        ? 'Utilisateur supprimé'
-                        : 'Erreur lors de la suppression'),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(success
+                      ? 'Utilisateur supprimé'
+                      : 'Erreur lors de la suppression'),
+                  backgroundColor: success ? Colors.green : Colors.red,
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child:
@@ -197,13 +209,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 ),
                 value: role,
                 groupValue: user.role,
-                activeColor: Color(UserModel.getRoleColor(role)),
                 onChanged: (UserRole? newRole) {
                   if (newRole != null && newRole != user.role) {
                     Navigator.pop(context);
                     _confirmRoleChange(context, user, newRole, userService);
                   }
                 },
+                activeColor: Color(UserModel.getRoleColor(role)),
+                controlAffinity: ListTileControlAffinity.trailing,
               );
             }),
           ],

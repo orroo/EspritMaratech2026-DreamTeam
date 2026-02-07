@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
+import '../../widgets/assistant_fab.dart';
 
 class ClubHistoryScreen extends StatelessWidget {
   final bool isVisitor;
@@ -65,6 +66,7 @@ class ClubHistoryScreen extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 

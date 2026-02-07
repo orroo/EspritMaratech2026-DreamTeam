@@ -127,4 +127,30 @@ class EventService with ChangeNotifier {
       }
     }
   }
+
+  Future<void> joinEvent(String eventId, String userId) async {
+    try {
+      await FirebaseFirestore.instance.collection('event').doc(eventId).update({
+        'participants': FieldValue.arrayUnion([userId])
+      });
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error joining event: $e");
+      }
+    }
+  }
+
+  Future<void> leaveEvent(String eventId, String userId) async {
+    try {
+      await FirebaseFirestore.instance.collection('event').doc(eventId).update({
+        'participants': FieldValue.arrayRemove([userId])
+      });
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error leaving event: $e");
+      }
+    }
+  }
 }

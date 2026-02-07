@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/notification_model.dart';
 import '../../services/notification_service.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/assistant_fab.dart';
 import '../../utils/constants.dart';
 import '../events/event_details_screen.dart';
 import '../../services/event_service.dart';
@@ -144,6 +145,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         },
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 

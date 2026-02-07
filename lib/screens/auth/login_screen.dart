@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
 import 'register_screen.dart';
+import '../../widgets/assistant_fab.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,21 +62,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Icon(Icons.directions_run,
                       size: 80, color: AppColors.primary),
                   const SizedBox(height: 16),
-                  Text(
-                    'Running Club Tunis',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                  Semantics(
+                    header: true,
+                    label: "Titre de l'application: Running Club Tunis",
+                    child: Text(
+                      'Running Club Tunis',
+                      textAlign: TextAlign.center,
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Bienvenue',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                  Semantics(
+                    label: "Message de bienvenue",
+                    child: Text(
+                      'Bienvenue',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
                   ),
                   const SizedBox(height: 48),
 
@@ -122,22 +131,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Login Button
-                  ElevatedButton(
-                    onPressed: isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Semantics(
+                    button: true,
+                    label: "Bouton de connexion",
+                    hint: "Appuyez pour vous connecter avec votre nom et CIN",
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Se connecter',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Se connecter',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
 
                   const SizedBox(height: 16),
@@ -173,6 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 }

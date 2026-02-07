@@ -7,9 +7,7 @@ import '../models/notification_model.dart';
 import '../utils/constants.dart';
 
 class NotificationOverlayListener extends StatefulWidget {
-  final Widget child;
-
-  const NotificationOverlayListener({super.key, required this.child});
+  const NotificationOverlayListener({super.key});
 
   @override
   State<NotificationOverlayListener> createState() =>
@@ -19,8 +17,7 @@ class NotificationOverlayListener extends StatefulWidget {
 class _NotificationOverlayListenerState
     extends State<NotificationOverlayListener> {
   StreamSubscription? _subscription;
-  String? _lastNotificationId;
-  OverlayEntry? _overlayEntry;
+  NotificationModel? _currentNotification;
   Timer? _timer;
 
   @override
@@ -34,7 +31,6 @@ class _NotificationOverlayListenerState
   @override
   void dispose() {
     _subscription?.cancel();
-    _overlayEntry?.remove();
     _timer?.cancel();
     super.dispose();
   }
@@ -50,53 +46,57 @@ class _NotificationOverlayListenerState
         _subscription = notificationService
             .getLatestAnnouncement(user.group ?? 'All', user.lastReadTimestamp)
             .listen((notification) {
-          if (notification != null && notification.id != _lastNotificationId) {
-            _lastNotificationId = notification.id;
-            _showPopup(notification);
+          if (notification != null &&
+              notification.id != _currentNotification?.id) {
+            setState(() {
+              _currentNotification = notification;
+            });
+            _startTimer();
           }
         });
       } else {
         _subscription?.cancel();
-        _overlayEntry?.remove();
-        _overlayEntry = null;
+        setState(() {
+          _currentNotification = null;
+        });
       }
     });
   }
 
-  void _showPopup(NotificationModel notification) {
-    _overlayEntry?.remove();
+  void _startTimer() {
     _timer?.cancel();
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 10,
-        left: 10,
-        right: 10,
-        child: Material(
-          color: Colors.transparent,
-          child: _PopupBanner(
-            title: notification.title,
-            message: notification.message,
-            onDismiss: () {
-              _overlayEntry?.remove();
-              _overlayEntry = null;
-            },
-          ),
-        ),
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-
     _timer = Timer(const Duration(seconds: 4), () {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
+      if (mounted) {
+        setState(() {
+          _currentNotification = null;
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    if (_currentNotification == null) return const SizedBox.shrink();
+
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 10,
+          left: 10,
+          right: 10,
+        ),
+        child: _PopupBanner(
+          title: _currentNotification!.title,
+          message: _currentNotification!.message,
+          onDismiss: () {
+            setState(() {
+              _currentNotification = null;
+            });
+          },
+        ),
+      ),
+    );
   }
 }
 

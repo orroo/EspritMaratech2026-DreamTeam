@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'models/user_model.dart';
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'services/event_service.dart';
@@ -12,7 +13,7 @@ import 'services/group_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'services/notification_service.dart';
-import 'widgets/notification_overlay.dart';
+import 'services/assistant_service.dart';
 import 'utils/constants.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -47,6 +48,9 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final NotificationService notificationService;
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   const MyApp({super.key, required this.notificationService});
 
   @override
@@ -58,6 +62,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserService()),
         ChangeNotifierProvider(create: (_) => ProgramService()),
         ChangeNotifierProvider(create: (_) => GroupService()),
+        ChangeNotifierProvider(
+            create: (context) => AssistantService(navigatorKey)),
         ChangeNotifierProvider.value(value: notificationService),
       ],
       child: MaterialApp(
@@ -71,9 +77,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           textTheme: GoogleFonts.interTextTheme(),
         ),
-        builder: (context, child) {
-          return NotificationOverlayListener(child: child!);
-        },
+        navigatorKey: navigatorKey,
         home: const LoginAuthWrapper(),
       ),
     );
@@ -85,14 +89,20 @@ class LoginAuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Implement actual stream listener for auth state
     final authService = Provider.of<AuthService>(context);
 
-    // Simple state check for now
-    if (authService.isAuthenticated) {
-      return const HomeScreen();
-    } else {
-      return const LoginScreen();
-    }
+    return StreamBuilder<UserModel?>(
+      stream: authService.authStateStream(),
+      builder: (context, snapshot) {
+        // If the stream hasn't yielded yet, show the current state
+        final user = snapshot.data ?? authService.currentUser;
+
+        if (user != null) {
+          return const HomeScreen();
+        } else {
+          return const LoginScreen();
+        }
+      },
+    );
   }
 }

@@ -9,6 +9,7 @@ import '../../models/user_model.dart';
 import '../../models/group_model.dart';
 import '../../services/group_service.dart';
 import '../../utils/constants.dart';
+import '../../widgets/assistant_fab.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -169,6 +170,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           ],
         ),
       ),
+      floatingActionButton: const AssistantFAB(),
     );
   }
 }
