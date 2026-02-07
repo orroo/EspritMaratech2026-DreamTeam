@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -18,7 +20,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
-        throw UnsupportedError('DefaultFirebaseOptions not configured for Linux.');
+        throw UnsupportedError(
+          'DefaultFirebaseOptions not configured for Linux.',
+        );
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -26,52 +30,56 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBs0n_tmtciHHlRXf30XxVgrbC4-4TENzA',
-    appId: '1:164074208933:web:6ad11b87de6817c298174c',
-    messagingSenderId: '164074208933',
-    projectId: 'rct-connect',
-    authDomain: 'rct-connect.firebaseapp.com',
-    storageBucket: 'rct-connect.firebasestorage.app',
-    measurementId: 'G-KD1LR93RNS',
-  );
+  static FirebaseOptions get web => FirebaseOptions(
+        apiKey: dotenv.env['web_api_key']!,
+        appId: dotenv.env['web_app_id']!,
+        messagingSenderId: dotenv.env['web_messaging_sender_id']!,
+        projectId: dotenv.env['web_project_id']!,
+        authDomain: dotenv.env['web_auth_domain'],
+        storageBucket: dotenv.env['web_storage_bucket'],
+        measurementId: dotenv.env['web_measurement_id'],
+      );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBV0NGHyaikr0pCzpT-2iyPOsNDh7QPp7s',
-    appId: '1:164074208933:ios:c2987ba9d2ed7b4198174c',
-    messagingSenderId: '164074208933',
-    projectId: 'rct-connect',
-    storageBucket: 'rct-connect.firebasestorage.app',
-    iosClientId: '164074208933-agcoiag5l1voejoceso13rm249sma4oa.apps.googleusercontent.com',
-    iosBundleId: 'com.example.runningClubTunis',
-  );
+  static FirebaseOptions get macos => FirebaseOptions(
+        apiKey: dotenv.env['macos_api_key']!,
+        appId: dotenv.env['macos_app_id']!,
+        messagingSenderId: dotenv.env['macos_messaging_sender_id']!,
+        projectId: dotenv.env['macos_project_id']!,
+        storageBucket: dotenv.env['macos_storage_bucket'],
+        authDomain: dotenv.env['macos_auth_domain'],
+        measurementId: dotenv.env['macos_measurement_id'],
+        iosBundleId: 'com.example.runningClubTunis',
+      );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBV0NGHyaikr0pCzpT-2iyPOsNDh7QPp7s',
-    appId: '1:164074208933:ios:c2987ba9d2ed7b4198174c',
-    messagingSenderId: '164074208933',
-    projectId: 'rct-connect',
-    storageBucket: 'rct-connect.firebasestorage.app',
-    iosClientId: '164074208933-agcoiag5l1voejoceso13rm249sma4oa.apps.googleusercontent.com',
-    iosBundleId: 'com.example.runningClubTunis',
-  );
+  static FirebaseOptions get ios => FirebaseOptions(
+        apiKey: dotenv.env['ios_api_key']!,
+        appId: dotenv.env['ios_app_id']!,
+        messagingSenderId: dotenv.env['ios_messaging_sender_id']!,
+        projectId: dotenv.env['ios_project_id']!,
+        storageBucket: dotenv.env['ios_storage_bucket'],
+        authDomain: dotenv.env['ios_auth_domain'],
+        measurementId: dotenv.env['ios_measurement_id'],
+        iosClientId: dotenv.env['ios_client_id'],
+        iosBundleId: 'com.example.runningClubTunis',
+      );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDNAgAE_ULnrFPWdmG37PLX8OAFee7O3DY',
-    appId: '1:164074208933:android:dea395827f930a8898174c',
-    messagingSenderId: '164074208933',
-    projectId: 'rct-connect',
-    storageBucket: 'rct-connect.firebasestorage.app',
-  );
+  static FirebaseOptions get android => FirebaseOptions(
+        apiKey: dotenv.env['android_api_key']!,
+        appId: dotenv.env['android_app_id']!,
+        messagingSenderId: dotenv.env['android_messaging_sender_id']!,
+        projectId: dotenv.env['android_project_id']!,
+        storageBucket: dotenv.env['android_storage_bucket'],
+        authDomain: dotenv.env['android_auth_domain'],
+        measurementId: dotenv.env['android_measurement_id'],
+      );
 
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBs0n_tmtciHHlRXf30XxVgrbC4-4TENzA',
-    appId: '1:164074208933:web:434493da338e661698174c',
-    messagingSenderId: '164074208933',
-    projectId: 'rct-connect',
-    authDomain: 'rct-connect.firebaseapp.com',
-    storageBucket: 'rct-connect.firebasestorage.app',
-    measurementId: 'G-BD68PF3BL5',
-  );
-
+  static FirebaseOptions get windows => FirebaseOptions(
+        apiKey: dotenv.env['windows_api_key']!,
+        appId: dotenv.env['windows_app_id']!,
+        messagingSenderId: dotenv.env['windows_messaging_sender_id']!,
+        projectId: dotenv.env['windows_project_id']!,
+        storageBucket: dotenv.env['windows_storage_bucket'],
+        authDomain: dotenv.env['windows_auth_domain'],
+        measurementId: dotenv.env['windows_measurement_id'],
+      );
 }
