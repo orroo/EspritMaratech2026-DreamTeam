@@ -7,6 +7,10 @@ import '../../services/event_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/constants.dart';
 import '../../widgets/assistant_fab.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:flutter/foundation.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final EventModel event;
@@ -121,6 +125,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     }
   }
 
+  Future<LatLng?> _getEventLocation(String address) async {
+    if (address.isEmpty || address.trim().isEmpty) return null;
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        return LatLng(locations.first.latitude, locations.first.longitude);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Geocoding error: $e");
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
@@ -232,6 +251,52 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             icon: Icons.people,
             title: 'Participants',
             content: '${event.participants.length} participant(s)',
+          ),
+          const SizedBox(height: 16),
+          // Map Section
+          FutureBuilder<LatLng?>(
+            future: _getEventLocation(event.location),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError ||
+                  !snapshot.hasData ||
+                  snapshot.data == null) {
+                return const SizedBox
+                    .shrink(); // Hide map if location not found
+              }
+              final location = snapshot.data!;
+              return SizedBox(
+                height: 200,
+                width: double.infinity,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: location,
+                      initialZoom: 15.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.rct_connect',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: location,
+                            child: const Icon(Icons.location_on,
+                                color: Colors.red, size: 40),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 24),
           _buildJoinLeaveButton(context, event),
